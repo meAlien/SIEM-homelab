@@ -46,6 +46,8 @@ and incident investigation.
 ---
 
 ## Repository Structure
+
+'''
 siem-homelab/
 ├── README.md                          # This file
 ├── rules/
@@ -61,6 +63,8 @@ siem-homelab/
 ├── scenario-a/                  # Mimikatz alert evidence
 ├── scenario-b/                  # Registry persistence evidence
 └── scenario-c/                  # PowerShell recon evidence
+
+'''
 
 
 ---
