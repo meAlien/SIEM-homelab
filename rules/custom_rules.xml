@@ -1,0 +1,202 @@
+﻿<!-- ============================================================
+     Custom SIEM Home Lab Detection Rules
+     Author: Abdul Hadi
+     Last Updated: 2025
+     
+     MITRE ATT&CK Coverage:
+       T1003.001 - OS Credential Dumping: LSASS Memory
+       T1547.001 - Boot/Logon Autostart: Registry Run Keys
+       T1059.001 - Command & Scripting: PowerShell
+     ============================================================ -->
+
+<group name="sysmon,mitre,custom_lab,">
+
+  <!-- ============================================================
+       SCENARIO A — Credential Dumping via LSASS Access
+       MITRE: T1003.001
+       Sysmon EID: 10 (ProcessAccess)
+       ============================================================ -->
+
+  <!-- Rule 1: Any process accessing lsass.exe -->
+  <rule id="100100" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^10$</field>
+    <field name="win.eventdata.targetImage" type="pcre2">
+      (?i)lsass\.exe
+    </field>
+    <description>
+      Possible credential dumping: Process accessed lsass.exe memory (T1003.001)
+    </description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>credential_access,lsass_access,</group>
+  </rule>
+
+  <!-- Rule 2: High-confidence Mimikatz — suspicious access mask -->
+  <rule id="100101" level="15">
+    <if_sid>100100</if_sid>
+    <field name="win.eventdata.grantedAccess" type="pcre2">
+      0x1010|0x1410|0x143a|0x1438|0x1418
+    </field>
+    <description>
+      HIGH CONFIDENCE — Mimikatz credential dump detected: 
+      lsass.exe accessed with known Mimikatz access mask (T1003.001)
+    </description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>credential_access,lsass_access,mimikatz,high_confidence,</group>
+  </rule>
+
+  <!-- Rule 3: Known offensive tools accessing lsass -->
+  <rule id="100102" level="15">
+    <if_sid>100100</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">
+      (?i)mimikatz|procdump|wce\.exe|pwdump|gsecdump|cachedump
+    </field>
+    <description>
+      CRITICAL — Known credential dumping tool accessing lsass.exe (T1003.001)
+    </description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>credential_access,lsass_access,mimikatz,high_confidence,</group>
+  </rule>
+
+
+  <!-- ============================================================
+       SCENARIO B — Persistence via Registry Run Key
+       MITRE: T1547.001
+       Sysmon EID: 13 (RegistryEvent - Value Set)
+       ============================================================ -->
+
+  <!-- Rule 4: Any write to Run/RunOnce keys -->
+  <rule id="100110" level="10">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^13$</field>
+    <field name="win.eventdata.targetObject" type="pcre2">
+      (?i)\\CurrentVersion\\Run
+    </field>
+    <description>
+      Registry Run key modification detected — possible persistence (T1547.001)
+    </description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <group>persistence,registry_run,</group>
+  </rule>
+
+  <!-- Rule 5: Run key points to suspicious locations -->
+  <rule id="100111" level="13">
+    <if_sid>100110</if_sid>
+    <field name="win.eventdata.details" type="pcre2">
+      (?i)appdata|temp|tmp|programdata|\\users\\
+    </field>
+    <description>
+      HIGH CONFIDENCE — Run key persistence pointing to suspicious path (T1547.001)
+    </description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <group>persistence,registry_run,suspicious_path,high_confidence,</group>
+  </rule>
+
+  <!-- Rule 6: Run key value masquerading as system process -->
+  <rule id="100112" level="15">
+    <if_sid>100110</if_sid>
+    <field name="win.eventdata.details" type="pcre2">
+      (?i)svchost|csrss|lsass|winlogon|explorer|taskhost
+    </field>
+    <description>
+      CRITICAL — Run key persistence masquerading as system process (T1547.001)
+    </description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <group>persistence,registry_run,masquerading,high_confidence,</group>
+  </rule>
+
+
+  <!-- ============================================================
+       SCENARIO C — Recon via Encoded PowerShell
+       MITRE: T1059.001
+       Sysmon EID: 1 (Process Creation)
+       ============================================================ -->
+
+  <!-- Rule 7: PowerShell launched with encoded command flag -->
+  <rule id="100120" level="10">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^1$</field>
+    <field name="win.eventdata.image" type="pcre2">
+      (?i)powershell\.exe|pwsh\.exe
+    </field>
+    <field name="win.eventdata.commandLine" type="pcre2">
+      (?i)-enc|-encodedcommand|-ec\s
+    </field>
+    <description>
+      PowerShell launched with encoded command — possible evasion (T1059.001)
+    </description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>execution,powershell,encoded_command,</group>
+  </rule>
+
+  <!-- Rule 8: Encoded PowerShell spawned by PowerShell (suspicious parent) -->
+  <rule id="100121" level="13">
+    <if_sid>100120</if_sid>
+    <field name="win.eventdata.parentImage" type="pcre2">
+      (?i)powershell\.exe|pwsh\.exe|cmd\.exe|wscript|cscript
+    </field>
+    <description>
+      HIGH CONFIDENCE — Encoded PowerShell spawned by scripting engine (T1059.001)
+    </description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>execution,powershell,encoded_command,suspicious_parent,high_confidence,</group>
+  </rule>
+
+  <!-- Rule 9: Encoded PowerShell with recon commands decoded pattern -->
+  <rule id="100122" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^1$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">
+      (?i)-enc|-encodedcommand
+    </field>
+    <field name="win.eventdata.commandLine" type="pcre2">
+      (?i)get-process|get-localuser|get-netip|get-computer|whoami|ipconfig|net\s+user
+    </field>
+    <description>
+      Encoded PowerShell executing recon commands (T1059.001)
+    </description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>execution,powershell,discovery,encoded_command,</group>
+  </rule>
+
+
+  <!-- ============================================================
+       CORRELATION RULE — Multi-stage attack detected
+       Fires when persistence follows credential dumping
+       ============================================================ -->
+
+  <!-- Rule 10: Credential dump followed by persistence attempt -->
+  <rule id="100130" level="15" timeframe="300" frequency="2">
+    <if_matched_sid>100100</if_matched_sid>
+    <if_matched_sid>100110</if_matched_sid>
+    <same_source_ip />
+    <description>
+      CRITICAL — Multi-stage attack: credential dumping followed by 
+      persistence attempt within 5 minutes. Possible active intrusion.
+    </description>
+    <mitre>
+      <id>T1003.001</id>
+      <id>T1547.001</id>
+    </mitre>
+    <group>correlation,multi_stage,critical,</group>
+  </rule>
+
+</group>
