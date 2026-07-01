@@ -47,7 +47,7 @@ and incident investigation.
 
 ## Repository Structure
 
-'''
+```
 siem-homelab/
 ├── README.md                          # This file
 ├── rules/
@@ -64,7 +64,7 @@ siem-homelab/
 ├── scenario-b/                  # Registry persistence evidence
 └── scenario-c/                  # PowerShell recon evidence
 
-'''
+```
 
 
 ---
@@ -86,7 +86,8 @@ docker compose up -d
 Access dashboard at `https://localhost` — credentials: `admin / SecretPassword`
 
 ### 2. Deploy Custom Detection Rules
-```bash
+```
+bash
 docker exec -it single-node-wazuh.manager-1 bash
 cp /var/ossec/etc/rules/local_rules.xml /var/ossec/etc/rules/local_rules.xml.bak
 # paste contents of rules/custom_rules.xml into local_rules.xml
