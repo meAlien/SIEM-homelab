@@ -22,16 +22,15 @@ and incident investigation.
 │  • Attack tools     │         │  • Wazuh Dashboard   │
 └─────────────────────┘         └──────────────────────┘
 
-
 ## Tools & Technologies
 
-| Tool       | Version | Purpose |
-
-| Wazuh      | 4.7     | SIEM — log ingestion, alerting, dashboards |
-| Sysmon     | 15.x    | Windows endpoint telemetry |
-| VirtualBox | 7.x     | Hypervisor for Windows VM |
-| Docker     | Latest  | Runs Wazuh stack on host |
-| Mimikatz   | 2.2.0   | Credential dumping simulation |
+| Tool | Version | Purpose |
+|---|---|---|
+| Wazuh | 4.7 | SIEM — log ingestion, alerting, dashboards |
+| Sysmon | 15.x | Windows endpoint telemetry |
+| VirtualBox | 7.x | Hypervisor for Windows VM |
+| Docker | Latest | Runs Wazuh stack on host |
+| Mimikatz | 2.2.0 | Credential dumping simulation |
 
 ---
 
@@ -47,7 +46,6 @@ and incident investigation.
 ---
 
 ## Repository Structure
-
 siem-homelab/
 ├── README.md                          # This file
 ├── rules/
@@ -59,10 +57,10 @@ siem-homelab/
 │     ├── scenario-b-walkthrough.md   # Persistence investigation
 │     └── scenario-c-walkthrough.md   # Encoded PowerShell investigation
 └── evidence/
-├── setup/                            # Lab setup screenshots
-├── scenario-a/                       # Mimikatz alert evidence
-├── scenario-b/                       # Registry persistence evidence
-└── scenario-c/                       # PowerShell recon evidence
+├── setup/                       # Lab setup screenshots
+├── scenario-a/                  # Mimikatz alert evidence
+├── scenario-b/                  # Registry persistence evidence
+└── scenario-c/                  # PowerShell recon evidence
 
 
 ---
@@ -114,7 +112,7 @@ cd C:\Tools\Sysmon
 ---
 
 ## Author
-Abdul Hadi
+**Abdul Hadi**
 MCA Graduate — Lovely Professional University
 [LinkedIn](https://www.linkedin.com/in/abdul-hadi-719810248/) 
 [GitHub](https://github.com/meAlien)
