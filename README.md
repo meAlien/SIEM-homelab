@@ -14,6 +14,8 @@ and incident investigation.
 
 ## Lab Architecture
 
+```
+
 ┌─────────────────────┐         ┌──────────────────────┐
 │   Windows 10 VM     │────────▶│   Wazuh Manager      │
 │                     │  logs   │   (Docker on host)   │
@@ -21,6 +23,8 @@ and incident investigation.
 │  • Wazuh Agent 4.7  │         │  • Wazuh Indexer     │
 │  • Attack tools     │         │  • Wazuh Dashboard   │
 └─────────────────────┘         └──────────────────────┘
+
+```
 
 ## Tools & Technologies
 
